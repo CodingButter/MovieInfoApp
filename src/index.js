@@ -4,7 +4,7 @@ import Button from "@material-ui/core/Button";
 import Discoverer from "./my_modules/TMDBDiscover";
 import API_KEY from "./configs/API_KEY";
 
-const disc = new Discoverer(api_key);
+const disc = new Discoverer(API_KEY);
 disc.addFilter("person", "=", "Tom Cruise");
 disc.addSort("popularity", "desc");
 disc.page = 1;

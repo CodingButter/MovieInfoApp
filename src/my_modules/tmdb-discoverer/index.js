@@ -1,4 +1,43 @@
-import FetchJSON from './FetchJSON'
+/**
+ * Description. This will conver the object into a string to concatonate onto a url string
+ *
+ * @param {Object}  data  data for url string
+ * @return {String} serialized data string
+ *
+ */
+const Serialize = (url, data) => {
+	var str = url.includes('?') ? '' : '?'
+	for (var key in data) {
+		if (str.length > 1) str += '&'
+		str += key + '=' + encodeURIComponent(data[key])
+	}
+	return str
+}
+
+/**
+ * Description. Fetches the response from the rest api.
+ *
+ * @param {String or Object} _url string containing api url or object containing fetch data
+ * @param {Object} _data  contains the url data to be serialized
+ * @param {Function} _success callback function to fire when response is successfull
+ * @param {Function} _fail callback function to fire when response comes back with an error
+ *
+ */
+const FetchJSON = (url, data, _success) => {
+	url = url + Serialize(url, data)
+
+	fetch(url, {
+		method: 'GET',
+		headers: {
+			Accept: 'application/json'
+		}
+	})
+		.then(response => {
+			if (response.ok) return response.json()
+			return response.statusText
+		})
+		.then(_success)
+}
 
 /**
  * Builds a api call for The Movie Database.
@@ -10,11 +49,12 @@ import FetchJSON from './FetchJSON'
  * @param {String} api_key this is the individual api key for the movie database project
  *
  */
+
 class Discoverer {
 	/*
 	Config is the data returned from The Movie Database API
 	that will help us piece together image urls and other data
-*/
+	*/
 	static _CONFIG = null
 	//Current url for the movie database api we are currently using
 	static _API_BASE = 'http://api.themoviedb.org/3/'
@@ -35,7 +75,7 @@ class Discoverer {
 	//this will let us set conditions using less than or greater than signs
 	static _conds = {
 		'<': 'lte',
-		'>': 'gtr'
+		'>': 'gte'
 	}
 
 	//Private Properties
@@ -55,7 +95,7 @@ class Discoverer {
 
 	_buildFilters(property, value, cond, callback) {
 		if (property === 'people' || property === 'person') {
-			value = this.addPeople(value.split(','), '', ids => {
+			value = this._addPeople(value.split(','), '', ids => {
 				this._putFilter(property, ids.replace(/(^,)|(,$)/g, ''), cond)
 				callback()
 			})
@@ -124,6 +164,25 @@ class Discoverer {
 		return tmp
 	}
 
+	_addPeople(value, found, callback) {
+		var fnds = found.split(',')
+		var index = value.length - fnds.length
+		FetchJSON(
+			Discoverer._API_BASE + 'search/person',
+			{
+				api_key: this.api_key,
+				query: value[index]
+			},
+			data => {
+				var id = parseInt(data.results[0].id, 10)
+				found += ',' + id
+				found.trim(',')
+				if (index > 0) this._addPeople(value, found, callback)
+				else callback(found)
+			}
+		)
+	}
+
 	constructor(api_key) {
 		this.api_key = api_key
 		this.disc_url = Discoverer._API_BASE + 'discover/movie'
@@ -135,6 +194,10 @@ class Discoverer {
 	}
 
 	/**
+	 *
+	 * Adds a property to filter results by.
+	 * Adds a property to filter the results from the response of
+	 * our api call.
 	 *
 	 * @param {String} property The property we will add to the filter
 	 * @param {String} cond The condition to be met for filtering
@@ -148,12 +211,28 @@ class Discoverer {
 		})
 	}
 
+	/**
+	 *
+	 * @param {String} property This is a property to sort by .
+	 * @param {String} dir This is the direction to sort asc/desc.
+	 */
 	addSort(property, dir) {
 		this.sort = {
 			prop: property,
 			dir
 		}
 	}
+
+	/**
+	 * Initiates the api calls based on the filters and sorts added.
+	 *
+	 * Initiates the api calls and does all the behind the scenes work to return the
+	 * movies in the correctd order by the filters that were provided.
+	 *
+	 * @param {Function} callback A function that handles the response from the api call
+	 *
+	 * @returns {Object} A response object with all the information to build a list of movies.
+	 */
 	run(callback) {
 		if (Discoverer._CONFIG) {
 			this._loopFilters(() => {
@@ -176,25 +255,6 @@ class Discoverer {
 				}
 			)
 		}
-	}
-
-	addPeople(value, found, callback) {
-		var fnds = found.split(',')
-		var index = value.length - fnds.length
-		FetchJSON(
-			Discoverer._API_BASE + 'search/person',
-			{
-				api_key: this.api_key,
-				query: value[index]
-			},
-			data => {
-				var id = parseInt(data.results[0].id, 10)
-				found += ',' + id
-				found.trim(',')
-				if (index > 0) this.addPeople(value, found, callback)
-				else callback(found)
-			}
-		)
 	}
 }
 

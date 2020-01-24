@@ -1,0 +1,15 @@
+{
+	"name": "tmdb-discoverer",
+	"version": "1.0.2",
+	"description": "A library to make using the Discover api from themoviedb.org more intuitive",
+	"main": "index.js",
+	"keywords": [
+		"TMDB",
+		"Discoverer",
+		"Movies",
+		"Library",
+		"IMDB"
+	],
+	"author": "Jamie Nichols",
+	"license": "ISC"
+}

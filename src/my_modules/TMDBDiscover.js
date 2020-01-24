@@ -7,7 +7,7 @@ import FetchJSON from './FetchJSON'
  * to allow us to more simply retreive the data for movies from The Movie Database
  *
  * @class
- * @param {String} api_key This is the individual api key for the movie database project
+ * @param {String} api_key this is the individual api key for the movie database project
  *
  */
 class Discoverer {
@@ -17,8 +17,8 @@ class Discoverer {
 */
 	static _CONFIG = null
 	//Current url for the movie database api we are currently using
-	static _API_BASE = 'https://api.themoviedb.org/3/'
-	//This allows for a more intuitive way of putting together a movie query
+	static _API_BASE = 'http://api.themoviedb.org/3/'
+	//this allows for a more intuitive way of putting together a movie query
 	static _prop_fix = {
 		genre: 'with_genres',
 		people: 'with_people',
@@ -27,15 +27,15 @@ class Discoverer {
 		year: 'primary_release_year'
 	}
 
-	//This allows us to use more intuitive words for sorting the response
+	//this allows us to use more intuitive words for sorting the response
 	static _sort_fix = {
 		date: 'release_date'
 	}
 
-	//This will let us set conditions using less than or greater than signs
+	//this will let us set conditions using less than or greater than signs
 	static _conds = {
 		'<': 'lte',
-		'>': 'gte'
+		'>': 'gtr'
 	}
 
 	//Private Properties
@@ -54,14 +54,14 @@ class Discoverer {
 	}
 
 	_buildFilters(property, value, cond, callback) {
-		if (property == 'people' || property == 'person') {
+		if (property === 'people' || property === 'person') {
 			value = this.addPeople(value.split(','), '', ids => {
 				this._putFilter(property, ids.replace(/(^,)|(,$)/g, ''), cond)
 				callback()
 			})
-		} else if (property == 'genre') {
+		} else if (property === 'genre') {
 			FetchJSON(
-				Discoverer._API_BASE + 'genre/movie/list?callback=cb',
+				Discoverer._API_BASE + 'genre/movie/list',
 				{
 					api_key: this.api_key
 				},
@@ -105,7 +105,7 @@ class Discoverer {
 			page: this.page
 		}
 		this.filters.forEach(f => {
-			var cond = f.cond != undefined ? '.' + f.cond : ''
+			var cond = f.cond !== undefined ? '.' + f.cond : ''
 			tmp[
 				(Discoverer._prop_fix[f.prop]
 					? Discoverer._prop_fix[f.prop]
@@ -158,7 +158,7 @@ class Discoverer {
 		if (Discoverer._CONFIG) {
 			this._loopFilters(() => {
 				var sends = this._buildSends()
-				FetchJSON(disc_url, sends, function(data) {
+				FetchJSON(this.disc_url, sends, data => {
 					this.total_pages = data.total_pages
 					data.config = Discoverer._CONFIG
 					callback(data)
@@ -182,16 +182,16 @@ class Discoverer {
 		var fnds = found.split(',')
 		var index = value.length - fnds.length
 		FetchJSON(
-			Discoverer._API_BASE + 'search/person?callback=cb',
+			Discoverer._API_BASE + 'search/person',
 			{
 				api_key: this.api_key,
 				query: value[index]
 			},
 			data => {
-				var id = parseInt(data.results[0].id)
+				var id = parseInt(data.results[0].id, 10)
 				found += ',' + id
 				found.trim(',')
-				if (index > 0) This.addPeople(value, found, callback)
+				if (index > 0) this.addPeople(value, found, callback)
 				else callback(found)
 			}
 		)

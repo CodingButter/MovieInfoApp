@@ -14,7 +14,6 @@ export default function(url, data, _success) {
 
 	fetch(url, {
 		method: 'GET',
-		mode: 'no-cors',
 		headers: {
 			Accept: 'application/json'
 		}
@@ -23,5 +22,5 @@ export default function(url, data, _success) {
 			if (response.ok) return response.json()
 			return response.statusText
 		})
-		.then(response => console.log(response))
+		.then(_success)
 }

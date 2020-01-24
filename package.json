@@ -6,7 +6,7 @@
     "react",
     "material"
   ],
-  "homepage": "https://codesandbox.io/s/4j7m47vlm4",
+  "homepage": "http://grabmovies.tk/MovieInfoApp/build/",
   "main": "index.js",
   "dependencies": {
     "@babel/plugin-proposal-private-methods": "7.8.3",
@@ -18,7 +18,7 @@
     "react-scripts": "1.0.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "react-scripts start --disable-host-check",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
